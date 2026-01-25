@@ -2,21 +2,22 @@
 
 A sleek, lightweight cross-platform desktop client for **Home Assistant**, built with **Tauri**, **Rust**, and **TypeScript**.
 
----
+## 📥 Installation
 
-## 📥 For Users (Quick Install)
+You can find the latest version in the **[Releases](https://github.com/PsydoV2/home-assistant-desktop/releases)** section. We provide three different formats to suit your needs:
 
-If you just want to use the app without touching any code, follow these steps:
+| File Type            | Extension     | Best for...                                                                                                                |
+| :------------------- | :------------ | :------------------------------------------------------------------------------------------------------------------------- |
+| **Standard Setup**   | `.exe` (NSIS) | **Recommended.** Most users should pick this. It installs the app, adds it to the Start Menu, and sets up icons correctly. |
+| **MSI Installer**    | `.msi`        | Best for corporate environments or automated deployments via IT tools.                                                     |
+| **Portable Version** | `.exe`        | Users who want to run the app without installing it. _Note: Might not show the app icon correctly in Windows Explorer._    |
 
-1. Go to the **[Releases](https://www.google.com/search?q=https://github.com/PsydoV2/home-assistant-desktop/releases)** page.
-2. Download the latest `.exe` file (for Windows) or the appropriate installer for your OS.
-3. Run the installer/executable.
-4. **Initial Setup:** Enter the full URL of your Home Assistant instance (e.g., `http://homeassistant.local:8123`).
-5. **Usage:** \* The app stays in your **System Tray** (bottom right) when closed.
+### 🚀 Quick Start
 
-- Right-click the Tray Icon to **Reset the URL** or **Quit** the app.
-
----
+1. Download your preferred file above.
+2. Run the file and enter your **Home Assistant URL** (e.g., `http://homeassistant.local:8123`).
+3. The app will automatically remember your instance.
+4. To close, use the **X** – the app will stay active in your **System Tray** (near the clock).
 
 ## 🛠 For Developers (Source Code)
 
@@ -61,8 +62,6 @@ npm run tauri build
 
 ```
 
----
-
 ## ✨ Features
 
 - **🌍 Multi-language Support:** Setup screen with 12+ languages and flag icons.
@@ -70,15 +69,11 @@ npm run tauri build
 - **📥 Native Integration:** Hide-to-tray logic and native system menus.
 - **🔄 Deep Reset:** Completely clear stored instance data via the tray menu to switch servers.
 
----
-
 ## 📂 Project Structure
 
 - `src/` - Frontend: TypeScript (Logic), CSS (Styling), HTML (Structure).
 - `src-tauri/` - Backend: Rust logic, Window & Tray management.
 - `src-tauri/tauri.conf.json` - Core configuration (App ID, Windows, Icons).
-
----
 
 ## 🤝 Contributing
 
@@ -87,8 +82,6 @@ npm run tauri build
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
 4. Push to the Branch.
 5. Open a Pull Request.
-
----
 
 ## 📄 License
 
