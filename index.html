@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Assistant Desktop</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <img src="./src/assets/favicon-192x192.png" alt="" />
+      </div>
+      <div class="login-box">
+        <h1>Welcome!</h1>
+        <p>Please enter the URL of your Home Assistant</p>
+
+        <div class="input-group">
+          <input type="text" id="ha-url" placeholder=" " autocomplete="off" />
+          <label for="ha-url">URL </label>
+        </div>
+
+        <button id="connect-btn">Connect</button>
+
+        <div class="footer">
+          <span>ONLY LOCALY SAVED</span>
+        </div>
+      </div>
+      <div class="bottom-footer">
+        <select name="" id="">
+          <option value="">English</option>
+          <option value="">Deutsch</option>
+          <option value="">Français</option>
+        </select>
+        <a href="">Help</a>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
