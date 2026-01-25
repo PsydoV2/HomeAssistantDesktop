@@ -6,6 +6,7 @@ use tauri::{
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let show_i = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;

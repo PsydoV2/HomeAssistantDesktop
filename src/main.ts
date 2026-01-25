@@ -65,7 +65,7 @@ const translations = {
   },
   ru: {
     welcome: "Добро пожаловать!",
-    p_text: "Введите URL-адрес вашего инstanса",
+    p_text: "Введите URL-адрес вашего инстанса",
     label: "URL",
     connect: "Подключиться",
     footer: "СОХРАНЕНО ТОЛЬКО ЛОКАЛЬНО",
@@ -98,14 +98,13 @@ const translations = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Reset-Logic (Absolute Priorität)
+  // 1. Reset-Logik & Redirect
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get("reset") === "1") {
     localStorage.removeItem("ha_url");
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  // 2. Redirect-Check
   const savedUrl = localStorage.getItem("ha_url");
   if (
     savedUrl &&
@@ -116,21 +115,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // UI Elemente
+  // 2. Elemente referenzieren
   const urlInput = document.getElementById("ha-url") as HTMLInputElement;
-  const connectBtn = document.getElementById(
-    "connect-btn",
-  ) as HTMLButtonElement;
+  const connectBtn = document.getElementById("connect-btn");
   const welcomeText = document.getElementById("welcome-text");
   const subText = document.getElementById("sub-text");
   const urlLabel = document.getElementById("url-label");
   const storageInfo = document.getElementById("storage-info");
-  const helpLink = document.getElementById("help-link");
+  const helpLink = document.getElementById("help-link") as HTMLAnchorElement;
   const langWrapper = document.getElementById("lang-select-container");
   const langTrigger = langWrapper?.querySelector(".custom-select__trigger");
   const langText = document.getElementById("current-lang");
   const options = document.querySelectorAll(".custom-option");
 
+  // --- 3. Sprach-Update Funktion (OHNE FLAGGEN) ---
   function updateLanguage(lang: string) {
     const t = translations[lang as keyof typeof translations];
     if (!t) return;
@@ -166,12 +164,40 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("app_lang", lang);
   }
 
-  // Init
+  // --- 4. Der korrigierte Hilfe-Link Listener ---
+  helpLink?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const url = helpLink.href;
+
+    // In Tauri v2 mit withGlobalTauri: true liegt der opener oft unter:
+    // window.__TAURI__.opener
+    const tauri = (window as any).__TAURI__;
+
+    if (url && tauri && tauri.opener) {
+      try {
+        // Manche v2 Versionen nutzen .openUrl(), manche .open()
+        // Wir prüfen beides ab:
+        if (typeof tauri.opener.open === "function") {
+          await tauri.opener.open(url);
+        } else if (typeof tauri.opener.openUrl === "function") {
+          await tauri.opener.openUrl(url);
+        }
+      } catch (err) {
+        console.error("Tauri Opener Error:", err);
+      }
+    } else {
+      // Fallback für Browser-Tests
+      window.open(url, "_blank");
+    }
+  });
+
+  // 5. Initialisierung & Dropdown Events
   updateLanguage(localStorage.getItem("app_lang") || "en");
 
-  langTrigger?.addEventListener("click", () =>
-    langWrapper?.classList.toggle("open"),
-  );
+  langTrigger?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    langWrapper?.classList.toggle("open");
+  });
 
   options.forEach((option) => {
     option.addEventListener("click", () => {
@@ -194,8 +220,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  window.addEventListener("click", (e) => {
-    if (!langWrapper?.contains(e.target as Node))
-      langWrapper?.classList.remove("open");
-  });
+  window.addEventListener("click", () => langWrapper?.classList.remove("open"));
 });
