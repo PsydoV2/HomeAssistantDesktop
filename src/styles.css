@@ -3,9 +3,7 @@
   --primary-hover: #006787;
   --bg-color: #111111;
   --card-bg: #1c1c1c;
-  --input-bg: #282828;
   --text-color: #eee;
-  --error-color: #b00020;
 }
 
 body {
@@ -34,7 +32,7 @@ body::before {
     transparent 1px
   );
   background-size: 30px 30px;
-  opacity: 0.35;
+  opacity: 0.15;
   z-index: -1;
 }
 
@@ -47,65 +45,55 @@ body::before {
 
 .logo {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 .logo img {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
 }
 
 .login-box {
   background: var(--card-bg);
-  padding: 40px 20px;
+  padding: 40px;
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   text-align: center;
-  border: 1px solid var(--input-bg);
 }
 
-h1 {
-  font-size: 26px;
-  margin: 0 0 10px 0;
-  font-weight: 400;
-}
-p {
-  color: #aaa;
-  margin-bottom: 30px;
-  font-size: 15px;
+.login-box p {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .input-group {
   position: relative;
-  margin-bottom: 25px;
+  margin: 30px 0;
   text-align: left;
 }
 input {
-  width: calc(100% - 20px);
-  padding: 12px 10px;
+  width: 100%;
+  padding: 10px 0;
   font-size: 16px;
   color: #fff;
   border: none;
   border-bottom: 2px solid #444;
-  background: var(--input-bg);
+  background: transparent;
   outline: none;
-  border-radius: 5px 5px 0px 0px;
 }
 input:focus {
   border-bottom-color: var(--primary-color);
 }
 label {
   position: absolute;
-  top: 12px;
-  left: 10px;
+  top: 10px;
+  left: 0;
   color: #888;
   pointer-events: none;
   transition: 0.2s ease all;
 }
 input:focus ~ label,
 input:not(:placeholder-shown) ~ label {
-  top: -15px;
-  left: 0;
+  top: -20px;
   font-size: 12px;
   color: var(--primary-color);
 }
@@ -141,44 +129,40 @@ button:hover {
   padding: 0 5px;
 }
 
-/* Custom Select Styling */
 .custom-select-wrapper {
   position: relative;
-  width: 130px;
+  width: 140px;
 }
 .custom-select {
   position: relative;
   cursor: pointer;
 }
+
 .custom-select__trigger {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: space-between;
   padding: 8px 12px;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   color: #a1a1a1;
-  font-size: 14px;
-  transition: 0.3s;
-}
-.custom-select__trigger:hover {
-  border-color: var(--primary-color);
-  color: #fff;
+  font-size: 13px;
 }
 
 .arrow {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-left: 2px solid #888;
   border-bottom: 2px solid #888;
   transform: rotate(-45deg);
   transition: 0.3s;
   position: relative;
-  bottom: 3px;
+  bottom: 2px;
 }
 .custom-select.open .arrow {
   transform: rotate(135deg);
-  bottom: -3px;
+  bottom: -2px;
 }
 
 .custom-options {
@@ -186,7 +170,7 @@ button:hover {
   bottom: 120%;
   left: 0;
   right: 0;
-  background: var(--bg-color);
+  background: #222;
   border: 1px solid #444;
   border-radius: 12px;
   opacity: 0;
@@ -194,8 +178,10 @@ button:hover {
   transform: translateY(10px);
   transition: 0.3s;
   z-index: 10;
-  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
 }
+
 .custom-select.open .custom-options {
   opacity: 1;
   visibility: visible;
@@ -205,27 +191,27 @@ button:hover {
 .custom-option {
   display: block;
   padding: 10px 15px;
-  font-size: 14px;
+  font-size: 13px;
   color: #a1a1a1;
-  transition: 0.2s;
 }
 .custom-option:hover {
-  background: var(--primary-hover);
+  background: var(--primary-color);
   color: white;
-}
-.custom-option.selected {
-  color: var(--primary-color);
-  background: rgba(0, 154, 199, 0.1);
 }
 
 .bottom-footer a {
   color: #a1a1a1;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
-  transition: 0.2s;
 }
-.bottom-footer a:hover {
-  color: var(--primary-color);
+
+/* Scrollbar Styling */
+.custom-options::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-options::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
 }

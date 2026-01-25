@@ -23,9 +23,100 @@ const translations = {
     footer: "ENREGISTRÉ LOCALEMENT UNIQUEMENT",
     help: "Aide",
   },
+  es: {
+    welcome: "¡Bienvenido!",
+    p_text: "Introduce la URL de tu instancia",
+    label: "URL",
+    connect: "Conectar",
+    footer: "GUARDADO SOLO LOCALMENTE",
+    help: "Ayuda",
+  },
+  it: {
+    welcome: "Benvenuto!",
+    p_text: "Inserisci l'URL della tua istanza",
+    label: "URL",
+    connect: "Connetti",
+    footer: "SALVATO SOLO LOCALMENTE",
+    help: "Aiuto",
+  },
+  nl: {
+    welcome: "Welkom!",
+    p_text: "Voer de URL van je instantie in",
+    label: "URL",
+    connect: "Verbinden",
+    footer: "ALLEEN LOKAAL OPGESLAGEN",
+    help: "Hulp",
+  },
+  pl: {
+    welcome: "Witaj!",
+    p_text: "Wprowadź adres URL swojej instancji",
+    label: "URL",
+    connect: "Połącz",
+    footer: "ZAPISANO TYLKO LOKALNIE",
+    help: "Pomoc",
+  },
+  pt: {
+    welcome: "Bem-vindo!",
+    p_text: "Insira o URL da sua instância",
+    label: "URL",
+    connect: "Conectar",
+    footer: "SALVO APENAS LOCALMENTE",
+    help: "Ajuda",
+  },
+  ru: {
+    welcome: "Добро пожаловать!",
+    p_text: "Введите URL-адрес вашего инstanса",
+    label: "URL",
+    connect: "Подключиться",
+    footer: "СОХРАНЕНО ТОЛЬКО ЛОКАЛЬНО",
+    help: "Помощь",
+  },
+  ja: {
+    welcome: "ようこそ！",
+    p_text: "インスタンスのURLを入力してください",
+    label: "URL",
+    connect: "接続",
+    footer: "ローカルにのみ保存されます",
+    help: "ヘルプ",
+  },
+  zh: {
+    welcome: "欢迎！",
+    p_text: "请输入您的实例 URL",
+    label: "URL",
+    connect: "连接",
+    footer: "仅保存在本地",
+    help: "帮助",
+  },
+  tr: {
+    welcome: "Hoş geldiniz!",
+    p_text: "Lütfen örneğinizin URL'sini girin",
+    label: "URL",
+    connect: "Bağlan",
+    footer: "SADECE YEREL OLARAK KAYDEDİLDİ",
+    help: "Yardım",
+  },
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 1. Reset-Logic (Absolute Priorität)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("reset") === "1") {
+    localStorage.removeItem("ha_url");
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // 2. Redirect-Check
+  const savedUrl = localStorage.getItem("ha_url");
+  if (
+    savedUrl &&
+    savedUrl.startsWith("http") &&
+    urlParams.get("reset") !== "1"
+  ) {
+    window.location.replace(savedUrl);
+    return;
+  }
+
+  // UI Elemente
   const urlInput = document.getElementById("ha-url") as HTMLInputElement;
   const connectBtn = document.getElementById(
     "connect-btn",
@@ -35,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlLabel = document.getElementById("url-label");
   const storageInfo = document.getElementById("storage-info");
   const helpLink = document.getElementById("help-link");
-
   const langWrapper = document.getElementById("lang-select-container");
   const langTrigger = langWrapper?.querySelector(".custom-select__trigger");
   const langText = document.getElementById("current-lang");
@@ -50,9 +140,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (urlLabel) urlLabel.textContent = t.label;
     if (connectBtn) connectBtn.textContent = t.connect;
     if (storageInfo) storageInfo.textContent = t.footer;
-    if (langText)
-      langText.textContent =
-        lang === "de" ? "Deutsch" : lang === "en" ? "English" : "Français";
+
+    if (langText) {
+      const names: any = {
+        en: "English",
+        de: "Deutsch",
+        fr: "Français",
+        es: "Español",
+        it: "Italiano",
+        nl: "Nederlands",
+        pl: "Polski",
+        pt: "Português",
+        ru: "Русский",
+        ja: "日本語",
+        zh: "中文",
+        tr: "Türkçe",
+      };
+      langText.textContent = names[lang] || lang.toUpperCase();
+    }
 
     if (helpLink) {
       const svg = helpLink.querySelector("svg")?.outerHTML || "";
@@ -61,25 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("app_lang", lang);
   }
 
-  // --- WICHTIG: URL-CHECK ---
-  const savedUrl = localStorage.getItem("ha_url");
-  // Wir leiten nur weiter, wenn eine URL da ist UND wir nicht auf der index.html bleiben wollen
-  if (
-    savedUrl &&
-    savedUrl.startsWith("http") &&
-    !window.location.href.includes("reset=true")
-  ) {
-    window.location.replace(savedUrl);
-    return; // Stop das Script hier, wenn wir weiterleiten
-  }
-
-  // Falls wir durch einen Reset kommen, säubern wir die URL-Parameter
-  if (window.location.href.includes("reset=true")) {
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-
-  const savedLang = localStorage.getItem("app_lang") || "de";
-  updateLanguage(savedLang);
+  // Init
+  updateLanguage(localStorage.getItem("app_lang") || "en");
 
   langTrigger?.addEventListener("click", () =>
     langWrapper?.classList.toggle("open"),
@@ -97,11 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  window.addEventListener("click", (e) => {
-    if (!langWrapper?.contains(e.target as Node))
-      langWrapper?.classList.remove("open");
-  });
-
   connectBtn?.addEventListener("click", () => {
     let url = urlInput.value.trim();
     if (url && !url.startsWith("http")) url = "http://" + url;
@@ -109,5 +192,10 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("ha_url", url);
       window.location.replace(url);
     }
+  });
+
+  window.addEventListener("click", (e) => {
+    if (!langWrapper?.contains(e.target as Node))
+      langWrapper?.classList.remove("open");
   });
 });

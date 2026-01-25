@@ -25,13 +25,24 @@ pub fn run() {
                             let _ = window.set_focus();
                         }
                     } else if event.id.as_ref() == "reset" {
-                        if let Some(window) = app_handle.get_webview_window("main") {
-                            // Wir löschen alles und hängen einen Parameter an, um den Auto-Redirect im TS zu stoppen
-                            let _ = window.eval("localStorage.clear(); window.location.href = 'index.html?reset=true';");
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
-                    }
+    if let Some(window) = app_handle.get_webview_window("main") {
+        // Wir nutzen die absolute URL deines lokalen Frontends
+        // In der Produktion (Release) nutzt Tauri tauri://localhost oder ipc://
+        // Dieser Befehl funktioniert für Dev und Release:
+        let _ = window.eval("
+            localStorage.clear();
+            window.location.href = window.location.origin + '/index.html?reset=1';
+            
+            // Falls das fehlschlägt (weil wir auf einer fremden Domain sind), 
+            // erzwingen wir den harten Reload zur internen Startseite:
+            if (!window.location.href.includes('localhost') && !window.location.href.includes('tauri')) {
+                 window.location.href = 'http://localhost:1420/index.html?reset=1';
+            }
+        ");
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
                 })
                 .on_tray_icon_event(|tray_handle, event| {
                     if let TrayIconEvent::Click {
