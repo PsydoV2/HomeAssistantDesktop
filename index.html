@@ -9,30 +9,60 @@
   <body>
     <div class="container">
       <div class="logo">
-        <img src="./src/assets/favicon-192x192.png" alt="" />
+        <img src="./src/assets/favicon-192x192.png" alt="Logo" />
       </div>
       <div class="login-box">
-        <h1>Welcome!</h1>
-        <p>Please enter the URL of your Home Assistant</p>
+        <h1 id="welcome-text">Welcome!</h1>
+        <p id="sub-text">Please enter the URL of your Home Assistant</p>
 
         <div class="input-group">
           <input type="text" id="ha-url" placeholder=" " autocomplete="off" />
-          <label for="ha-url">URL </label>
+          <label for="ha-url" id="url-label">URL</label>
         </div>
 
         <button id="connect-btn">Connect</button>
 
         <div class="footer">
-          <span>ONLY LOCALY SAVED</span>
+          <span id="storage-info">ONLY LOCALLY SAVED</span>
         </div>
       </div>
+
       <div class="bottom-footer">
-        <select name="" id="">
-          <option value="">English</option>
-          <option value="">Deutsch</option>
-          <option value="">Français</option>
-        </select>
-        <a href="">Help</a>
+        <div class="custom-select-wrapper">
+          <div class="custom-select" id="lang-select-container">
+            <div class="custom-select__trigger">
+              <span id="current-lang">Deutsch</span>
+              <div class="arrow"></div>
+            </div>
+            <div class="custom-options">
+              <span class="custom-option" data-value="en">English</span>
+              <span class="custom-option" data-value="de">Deutsch</span>
+              <span class="custom-option" data-value="fr">Français</span>
+            </div>
+          </div>
+        </div>
+
+        <a
+          href="https://github.com/PsydoV2/home-assistant-desktop"
+          target="_blank"
+          id="help-link"
+        >
+          Hilfe
+          <svg
+            style="
+              width: 14px;
+              height: 14px;
+              vertical-align: middle;
+              margin-left: 4px;
+            "
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
+            />
+          </svg>
+        </a>
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>

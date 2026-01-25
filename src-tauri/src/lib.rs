@@ -7,12 +7,12 @@ use tauri::{
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            // Menü-Items erstellen
-            let quit_i = MenuItem::with_id(app, "quit", "Beenden", true, None::<&str>)?;
-            let show_i = MenuItem::with_id(app, "show", "Öffnen", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let show_i = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+            let reset_i = MenuItem::with_id(app, "reset", "Reset URL", true, None::<&str>)?;
 
-            // Tray Icon Setup
+            let menu = Menu::with_items(app, &[&show_i, &reset_i, &quit_i])?;
+
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
@@ -21,6 +21,13 @@ pub fn run() {
                         app_handle.exit(0);
                     } else if event.id.as_ref() == "show" {
                         if let Some(window) = app_handle.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    } else if event.id.as_ref() == "reset" {
+                        if let Some(window) = app_handle.get_webview_window("main") {
+                            // Wir löschen alles und hängen einen Parameter an, um den Auto-Redirect im TS zu stoppen
+                            let _ = window.eval("localStorage.clear(); window.location.href = 'index.html?reset=true';");
                             let _ = window.show();
                             let _ = window.set_focus();
                         }
