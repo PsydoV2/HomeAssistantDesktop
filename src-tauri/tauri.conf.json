@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Home Assistant",
-  "version": "0.1.0",
+  "productName": "Home Assistant Desktop",
+  "version": "1.0.0",
   "identifier": "com.sebfalter.home-assistant-desktop",
   "build": {
     "beforeDevCommand": "npm run dev",

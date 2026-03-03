@@ -1,52 +1,94 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Home Assistant Desktop Client" />
     <title>Home Assistant Desktop</title>
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
     <div class="container">
       <div class="logo">
-        <img src="./src/assets/favicon-192x192.png" alt="Logo" />
+        <img src="./src/assets/favicon-192x192.png" alt="Home Assistant Logo" />
       </div>
-      <div class="login-box">
+
+      <main class="login-box">
         <h1 id="welcome-text">Welcome!</h1>
         <p id="sub-text">Please enter the URL of your Home Assistant</p>
 
         <div class="input-group">
-          <input type="text" id="ha-url" placeholder=" " autocomplete="off" />
+          <input
+            type="url"
+            id="ha-url"
+            placeholder=" "
+            autocomplete="url"
+            spellcheck="false"
+            aria-label="Home Assistant URL"
+            aria-describedby="error-msg"
+          />
           <label for="ha-url" id="url-label">URL</label>
         </div>
 
-        <button id="connect-btn">Connect</button>
+        <!-- Error message – hidden by default, shown by main.ts on invalid input -->
+        <p id="error-msg" class="error-msg" hidden aria-live="polite"></p>
+
+        <button id="connect-btn" type="button">Connect</button>
 
         <div class="footer">
           <span id="storage-info">ONLY LOCALLY SAVED</span>
         </div>
-      </div>
+      </main>
 
       <div class="bottom-footer">
         <div class="custom-select-wrapper">
           <div class="custom-select" id="lang-select-container">
-            <div class="custom-select__trigger">
+            <div
+              class="custom-select__trigger"
+              role="button"
+              aria-haspopup="listbox"
+              tabindex="0"
+            >
               <span id="current-lang">English</span>
-              <div class="arrow"></div>
+              <div class="arrow" aria-hidden="true"></div>
             </div>
-            <div class="custom-options">
-              <span class="custom-option" data-value="en">English</span>
-              <span class="custom-option" data-value="de">Deutsch</span>
-              <span class="custom-option" data-value="fr">Français</span>
-              <span class="custom-option" data-value="es">Español</span>
-              <span class="custom-option" data-value="it">Italiano</span>
-              <span class="custom-option" data-value="nl">Nederlands</span>
-              <span class="custom-option" data-value="pl">Polski</span>
-              <span class="custom-option" data-value="pt">Português</span>
-              <span class="custom-option" data-value="ru">Русский</span>
-              <span class="custom-option" data-value="ja">日本語</span>
-              <span class="custom-option" data-value="zh">中文</span>
-              <span class="custom-option" data-value="tr">Türkçe</span>
+            <div class="custom-options" role="listbox">
+              <span class="custom-option" data-value="en" role="option"
+                >English</span
+              >
+              <span class="custom-option" data-value="de" role="option"
+                >Deutsch</span
+              >
+              <span class="custom-option" data-value="fr" role="option"
+                >Français</span
+              >
+              <span class="custom-option" data-value="es" role="option"
+                >Español</span
+              >
+              <span class="custom-option" data-value="it" role="option"
+                >Italiano</span
+              >
+              <span class="custom-option" data-value="nl" role="option"
+                >Nederlands</span
+              >
+              <span class="custom-option" data-value="pl" role="option"
+                >Polski</span
+              >
+              <span class="custom-option" data-value="pt" role="option"
+                >Português</span
+              >
+              <span class="custom-option" data-value="ru" role="option"
+                >Русский</span
+              >
+              <span class="custom-option" data-value="ja" role="option"
+                >日本語</span
+              >
+              <span class="custom-option" data-value="zh" role="option"
+                >中文</span
+              >
+              <span class="custom-option" data-value="tr" role="option"
+                >Türkçe</span
+              >
             </div>
           </div>
         </div>
@@ -54,10 +96,12 @@
         <a
           href="https://github.com/PsydoV2/home-assistant-desktop"
           target="_blank"
+          rel="noopener noreferrer"
           id="help-link"
         >
           Help
           <svg
+            aria-hidden="true"
             style="
               width: 14px;
               height: 14px;
@@ -74,6 +118,7 @@
         </a>
       </div>
     </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
