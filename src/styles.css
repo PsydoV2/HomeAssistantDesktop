@@ -103,9 +103,13 @@ body::before {
   text-align: left;
 }
 
+/* Reduce gap between consecutive inputs (name → URL) */
+.input-group + .input-group {
+  margin-top: 20px;
+}
+
 input[type="text"],
 input[type="url"] {
-  /* Use 100% of the parent, padding included, so it never overflows */
   width: 100%;
   padding: 10px 0;
   font-size: 16px;
@@ -122,12 +126,18 @@ input[type="url"]:focus {
   border-bottom-color: var(--primary-color);
 }
 
-/* Accessible focus ring for keyboard users */
-input[type="text"]:focus-visible,
-input[type="url"]:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 4px;
-  border-radius: 2px;
+/* Hide placeholder text when not focused so it doesn't stack with the
+   floating label. The placeholder attribute is still needed for the
+   :placeholder-shown selector that drives the label animation. */
+input[type="text"]::placeholder,
+input[type="url"]::placeholder {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+input[type="text"]:focus::placeholder,
+input[type="url"]:focus::placeholder {
+  opacity: 0.45;
 }
 
 label {
@@ -333,6 +343,215 @@ button:focus-visible {
 .custom-options::-webkit-scrollbar-thumb {
   background: #444;
   border-radius: 10px;
+}
+
+/* ============================================================
+   Update banner
+   ============================================================ */
+
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 154, 199, 0.15);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--text-color);
+  margin-bottom: 16px;
+}
+
+.update-banner[hidden] {
+  display: none;
+}
+
+.update-banner a {
+  color: var(--primary-color);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.update-banner a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Instance list
+   ============================================================ */
+
+#instances-section {
+  background: var(--card-bg);
+  padding: 32px 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#instances-section[hidden] {
+  display: none;
+}
+
+#instances-title {
+  margin: 0 0 20px;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.instance-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.instance-item:hover {
+  border-color: var(--primary-color);
+  background: rgba(0, 154, 199, 0.08);
+}
+
+.instance-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.instance-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.instance-url {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.instance-edit,
+.instance-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: auto;
+  margin-top: 0;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
+}
+
+.instance-edit:hover {
+  color: var(--primary-color);
+  background: rgba(0, 154, 199, 0.12);
+}
+
+.instance-delete:hover {
+  color: var(--error-color);
+  background: rgba(224, 92, 92, 0.1);
+}
+
+#add-instance-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 25px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+#add-instance-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* ============================================================
+   Back button
+   ============================================================ */
+
+#back-btn {
+  width: auto;
+  margin: 0 0 16px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: normal;
+  transition: color 0.2s, border-color 0.2s;
+  display: block;
+}
+
+#back-btn:hover {
+  color: var(--text-color);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+#back-btn[hidden] {
+  display: none;
+}
+
+/* ============================================================
+   Zoom controls
+   ============================================================ */
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zoom-controls button {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  margin: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-controls button:hover {
+  color: var(--text-color);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+#zoom-level {
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 34px;
+  text-align: center;
 }
 
 /* ============================================================

@@ -9,13 +9,46 @@
   </head>
   <body>
     <div class="container">
+      <!-- Update notification, shown by main.ts when a newer release exists -->
+      <div id="update-banner" class="update-banner" hidden>
+        <span id="update-text"></span>
+        <a
+          id="update-link"
+          href="https://github.com/PsydoV2/home-assistant-desktop/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          id="update-download"
+        >Download</a>
+      </div>
+
       <div class="logo">
         <img src="./src/assets/favicon-192x192.png" alt="Home Assistant Logo" />
       </div>
 
-      <main class="login-box">
+      <!-- Instance list view: shown when saved instances exist -->
+      <section id="instances-section" hidden aria-label="Saved instances">
+        <h1 id="instances-title">Your Instances</h1>
+        <div id="instances-list" role="list"></div>
+        <button id="add-instance-btn" type="button">+ Add Instance</button>
+      </section>
+
+      <!-- Add / connect form -->
+      <main class="login-box" id="add-form">
+        <button id="back-btn" type="button" hidden>← Back</button>
         <h1 id="welcome-text">Welcome!</h1>
         <p id="sub-text">Please enter the URL of your Home Assistant</p>
+
+        <div class="input-group">
+          <input
+            type="text"
+            id="ha-name"
+            placeholder=" "
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Instance name"
+          />
+          <label for="ha-name" id="name-label">Name (optional)</label>
+        </div>
 
         <div class="input-group">
           <input
@@ -30,7 +63,6 @@
           <label for="ha-url" id="url-label">URL</label>
         </div>
 
-        <!-- Error message – hidden by default, shown by main.ts on invalid input -->
         <p id="error-msg" class="error-msg" hidden aria-live="polite"></p>
 
         <button id="connect-btn" type="button">Connect</button>
@@ -47,50 +79,34 @@
               class="custom-select__trigger"
               role="button"
               aria-haspopup="listbox"
+              aria-expanded="false"
               tabindex="0"
             >
               <span id="current-lang">English</span>
               <div class="arrow" aria-hidden="true"></div>
             </div>
             <div class="custom-options" role="listbox">
-              <span class="custom-option" data-value="en" role="option"
-                >English</span
-              >
-              <span class="custom-option" data-value="de" role="option"
-                >Deutsch</span
-              >
-              <span class="custom-option" data-value="fr" role="option"
-                >Français</span
-              >
-              <span class="custom-option" data-value="es" role="option"
-                >Español</span
-              >
-              <span class="custom-option" data-value="it" role="option"
-                >Italiano</span
-              >
-              <span class="custom-option" data-value="nl" role="option"
-                >Nederlands</span
-              >
-              <span class="custom-option" data-value="pl" role="option"
-                >Polski</span
-              >
-              <span class="custom-option" data-value="pt" role="option"
-                >Português</span
-              >
-              <span class="custom-option" data-value="ru" role="option"
-                >Русский</span
-              >
-              <span class="custom-option" data-value="ja" role="option"
-                >日本語</span
-              >
-              <span class="custom-option" data-value="zh" role="option"
-                >中文</span
-              >
-              <span class="custom-option" data-value="tr" role="option"
-                >Türkçe</span
-              >
+              <span class="custom-option" data-value="en" role="option" tabindex="-1">English</span>
+              <span class="custom-option" data-value="de" role="option" tabindex="-1">Deutsch</span>
+              <span class="custom-option" data-value="fr" role="option" tabindex="-1">Français</span>
+              <span class="custom-option" data-value="es" role="option" tabindex="-1">Español</span>
+              <span class="custom-option" data-value="it" role="option" tabindex="-1">Italiano</span>
+              <span class="custom-option" data-value="nl" role="option" tabindex="-1">Nederlands</span>
+              <span class="custom-option" data-value="pl" role="option" tabindex="-1">Polski</span>
+              <span class="custom-option" data-value="pt" role="option" tabindex="-1">Português</span>
+              <span class="custom-option" data-value="ru" role="option" tabindex="-1">Русский</span>
+              <span class="custom-option" data-value="ja" role="option" tabindex="-1">日本語</span>
+              <span class="custom-option" data-value="zh" role="option" tabindex="-1">中文</span>
+              <span class="custom-option" data-value="tr" role="option" tabindex="-1">Türkçe</span>
             </div>
           </div>
+        </div>
+
+        <!-- Zoom controls -->
+        <div class="zoom-controls" id="zoom-controls">
+          <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+          <span id="zoom-level">100%</span>
+          <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
         </div>
 
         <a
@@ -102,12 +118,7 @@
           Help
           <svg
             aria-hidden="true"
-            style="
-              width: 14px;
-              height: 14px;
-              vertical-align: middle;
-              margin-left: 4px;
-            "
+            style="width: 14px; height: 14px; vertical-align: middle; margin-left: 4px;"
             viewBox="0 0 24 24"
           >
             <path

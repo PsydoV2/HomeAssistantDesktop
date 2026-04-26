@@ -1,339 +1,502 @@
-import type {} from "@tauri-apps/api"; // makes this file a module → enables declare global
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { getVersion } from "@tauri-apps/api/app";
+import { invoke } from "@tauri-apps/api/core";
+import { LANG_NAMES, translations } from "./translations";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-declare global {
-  interface Window {
-    __TAURI__?: {
-      opener?: {
-        open?: (url: string) => Promise<void>;
-        openUrl?: (url: string) => Promise<void>;
-      };
-    };
+interface HaInstance {
+  id: string;
+  name: string;
+  url: string;
+}
+
+// ---------------------------------------------------------------------------
+// Instance storage
+// ---------------------------------------------------------------------------
+
+function getInstances(): HaInstance[] {
+  try {
+    return JSON.parse(localStorage.getItem("ha_instances") ?? "[]");
+  } catch {
+    return [];
   }
 }
 
-// ---------------------------------------------------------------------------
-// Translations
-// ---------------------------------------------------------------------------
-
-const LANG_NAMES: Record<string, string> = {
-  en: "English",
-  de: "Deutsch",
-  fr: "Français",
-  es: "Español",
-  it: "Italiano",
-  nl: "Nederlands",
-  pl: "Polski",
-  pt: "Português",
-  ru: "Русский",
-  ja: "日本語",
-  zh: "中文",
-  tr: "Türkçe",
-};
-
-interface Translation {
-  welcome: string;
-  p_text: string;
-  label: string;
-  connect: string;
-  footer: string;
-  help: string;
-  placeholder: string;
-  invalid_url: string;
+function saveInstances(instances: HaInstance[]): void {
+  localStorage.setItem("ha_instances", JSON.stringify(instances));
 }
 
-const translations: Record<string, Translation> = {
-  en: {
-    welcome: "Welcome!",
-    p_text: "Please enter the URL of your Home Assistant",
-    label: "URL",
-    connect: "Connect",
-    footer: "ONLY LOCALLY SAVED",
-    help: "Help",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Please enter a valid URL (e.g. http://192.168.1.x:8123)",
-  },
-  de: {
-    welcome: "Willkommen!",
-    p_text: "Bitte gib die URL deiner Home Assistant Instanz ein",
-    label: "URL",
-    connect: "Verbinden",
-    footer: "NUR LOKAL GESPEICHERT",
-    help: "Hilfe",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url:
-      "Bitte gib eine gültige URL ein (z.B. http://192.168.1.x:8123)",
-  },
-  fr: {
-    welcome: "Bienvenue !",
-    p_text: "Veuillez saisir l'URL de votre instance Home Assistant",
-    label: "URL",
-    connect: "Se connecter",
-    footer: "ENREGISTRÉ LOCALEMENT UNIQUEMENT",
-    help: "Aide",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Veuillez entrer une URL valide (ex. http://192.168.1.x:8123)",
-  },
-  es: {
-    welcome: "¡Bienvenido!",
-    p_text: "Introduce la URL de tu instancia de Home Assistant",
-    label: "URL",
-    connect: "Conectar",
-    footer: "GUARDADO SOLO LOCALMENTE",
-    help: "Ayuda",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Introduce una URL válida (p.ej. http://192.168.1.x:8123)",
-  },
-  it: {
-    welcome: "Benvenuto!",
-    p_text: "Inserisci l'URL della tua istanza Home Assistant",
-    label: "URL",
-    connect: "Connetti",
-    footer: "SALVATO SOLO LOCALMENTE",
-    help: "Aiuto",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Inserisci un URL valido (es. http://192.168.1.x:8123)",
-  },
-  nl: {
-    welcome: "Welkom!",
-    p_text: "Voer de URL van je Home Assistant instantie in",
-    label: "URL",
-    connect: "Verbinden",
-    footer: "ALLEEN LOKAAL OPGESLAGEN",
-    help: "Hulp",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Voer een geldige URL in (bijv. http://192.168.1.x:8123)",
-  },
-  pl: {
-    welcome: "Witaj!",
-    p_text: "Wprowadź adres URL swojej instancji Home Assistant",
-    label: "URL",
-    connect: "Połącz",
-    footer: "ZAPISANO TYLKO LOKALNIE",
-    help: "Pomoc",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Podaj prawidłowy URL (np. http://192.168.1.x:8123)",
-  },
-  pt: {
-    welcome: "Bem-vindo!",
-    p_text: "Insira o URL da sua instância do Home Assistant",
-    label: "URL",
-    connect: "Conectar",
-    footer: "SALVO APENAS LOCALMENTE",
-    help: "Ajuda",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Insira um URL válido (ex. http://192.168.1.x:8123)",
-  },
-  ru: {
-    welcome: "Добро пожаловать!",
-    p_text: "Введите URL-адрес вашего экземпляра Home Assistant",
-    label: "URL",
-    connect: "Подключиться",
-    footer: "СОХРАНЕНО ТОЛЬКО ЛОКАЛЬНО",
-    help: "Помощь",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Введите корректный URL (напр. http://192.168.1.x:8123)",
-  },
-  ja: {
-    welcome: "ようこそ！",
-    p_text: "Home Assistant インスタンスのURLを入力してください",
-    label: "URL",
-    connect: "接続",
-    footer: "ローカルにのみ保存されます",
-    help: "ヘルプ",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "有効なURLを入力してください（例: http://192.168.1.x:8123）",
-  },
-  zh: {
-    welcome: "欢迎！",
-    p_text: "请输入您的 Home Assistant 实例 URL",
-    label: "URL",
-    connect: "连接",
-    footer: "仅保存在本地",
-    help: "帮助",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "请输入有效的 URL（例如 http://192.168.1.x:8123）",
-  },
-  tr: {
-    welcome: "Hoş geldiniz!",
-    p_text: "Home Assistant örneğinizin URL'sini girin",
-    label: "URL",
-    connect: "Bağlan",
-    footer: "SADECE YEREL OLARAK KAYDEDİLDİ",
-    help: "Yardım",
-    placeholder: "http://homeassistant.local:8123",
-    invalid_url: "Geçerli bir URL girin (örn. http://192.168.1.x:8123)",
-  },
-};
+/** Migrates a legacy ha_url entry into the instances list on first run. */
+function migrateLegacyUrl(): void {
+  const legacy = localStorage.getItem("ha_url");
+  if (legacy && getInstances().length === 0) {
+    saveInstances([{ id: Date.now().toString(), name: "", url: legacy }]);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Prepends http:// if no protocol is given and validates the result. */
 function normalizeUrl(raw: string): string | null {
   let url = raw.trim();
   if (!url) return null;
   if (!/^https?:\/\//i.test(url)) url = "http://" + url;
   try {
-    new URL(url); // throws if invalid
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
     return url;
   } catch {
     return null;
   }
 }
 
-/** Opens a URL in the system browser via the Tauri opener plugin (v2). */
-async function openExternalUrl(url: string): Promise<void> {
-  const tauri = window.__TAURI__;
-  if (tauri?.opener) {
-    try {
-      if (typeof tauri.opener.open === "function") {
-        await tauri.opener.open(url);
-        return;
-      }
-      if (typeof tauri.opener.openUrl === "function") {
-        await tauri.opener.openUrl(url);
-        return;
-      }
-    } catch (err) {
-      console.error("Tauri opener error:", err);
-    }
+function currentLang(): string {
+  return localStorage.getItem("app_lang") ?? "en";
+}
+
+function t() {
+  return translations[currentLang()] ?? translations["en"];
+}
+
+async function applyZoom(factor: number): Promise<void> {
+  try {
+    await invoke("set_zoom", { factor });
+  } catch {
+    // not running inside Tauri
   }
-  // Fallback for browser-based development
-  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+// ---------------------------------------------------------------------------
+// Update checker
+// ---------------------------------------------------------------------------
+
+async function checkForUpdates(): Promise<void> {
+  const banner = document.getElementById("update-banner");
+  const updateText = document.getElementById("update-text");
+  const downloadLink = document.getElementById("update-download");
+  if (!banner || !updateText) return;
+
+  try {
+    const current = await getVersion();
+    const res = await fetch(
+      "https://api.github.com/repos/PsydoV2/home-assistant-desktop/releases/latest",
+      { headers: { Accept: "application/vnd.github+json" } },
+    );
+    if (!res.ok) return;
+    const data = (await res.json()) as { tag_name?: string };
+    const latest = data.tag_name?.replace(/^v/, "");
+    if (latest && latest !== current) {
+      updateText.textContent = `${t().update_available} v${latest}`;
+      if (downloadLink) downloadLink.textContent = t().download;
+      banner.removeAttribute("hidden");
+    }
+  } catch {
+    // offline or rate-limited
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Language
+// ---------------------------------------------------------------------------
+
+function updateLanguage(lang: string): void {
+  const tr = translations[lang];
+  if (!tr) return;
+
+  document.documentElement.lang = lang;
+
+  const set = (id: string, text: string) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+
+  set("welcome-text", tr.welcome);
+  set("sub-text", tr.p_text);
+  set("url-label", tr.label);
+  set("name-label", tr.name_label);
+  set("instances-title", tr.your_instances);
+  set("add-instance-btn", tr.add_instance);
+  set("back-btn", tr.back);
+  set("storage-info", tr.footer);
+
+  // Only reset connect button when NOT in edit mode
+  if (!editingInstanceId) {
+    set("connect-btn", tr.connect);
+  }
+
+  const urlInput = document.getElementById("ha-url") as HTMLInputElement | null;
+  if (urlInput) urlInput.placeholder = tr.placeholder;
+
+  const nameInput = document.getElementById("ha-name") as HTMLInputElement | null;
+  if (nameInput) nameInput.placeholder = tr.name_placeholder;
+
+  const langText = document.getElementById("current-lang");
+  if (langText) langText.textContent = LANG_NAMES[lang] ?? lang.toUpperCase();
+
+  const helpLink = document.getElementById("help-link");
+  if (helpLink) {
+    const svg = helpLink.querySelector("svg");
+    helpLink.textContent = tr.help + " ";
+    if (svg) helpLink.appendChild(svg);
+  }
+
+  localStorage.setItem("app_lang", lang);
+}
+
+// ---------------------------------------------------------------------------
+// Edit state
+// ---------------------------------------------------------------------------
+
+let editingInstanceId: string | null = null;
+
+// ---------------------------------------------------------------------------
+// View switching
+// ---------------------------------------------------------------------------
+
+function showInstanceList(): void {
+  const section = document.getElementById("instances-section");
+  const form = document.getElementById("add-form");
+  if (section) section.removeAttribute("hidden");
+  if (form) form.setAttribute("hidden", "");
+  renderInstances();
+}
+
+function showAddForm(withBack: boolean): void {
+  const section = document.getElementById("instances-section");
+  const form = document.getElementById("add-form");
+  const backBtn = document.getElementById("back-btn");
+  const welcomeText = document.getElementById("welcome-text");
+  const subText = document.getElementById("sub-text");
+
+  if (section) section.setAttribute("hidden", "");
+  if (form) form.removeAttribute("hidden");
+
+  // Hide the welcome heading when accessed from the instance list
+  const hideHeader = withBack;
+  if (welcomeText) welcomeText.style.display = hideHeader ? "none" : "";
+  if (subText) subText.style.display = hideHeader ? "none" : "";
+
+  if (backBtn) {
+    if (withBack) backBtn.removeAttribute("hidden");
+    else backBtn.setAttribute("hidden", "");
+  }
+
+  const urlInput = document.getElementById("ha-url") as HTMLInputElement | null;
+  urlInput?.focus();
+}
+
+// ---------------------------------------------------------------------------
+// Instance list rendering
+// ---------------------------------------------------------------------------
+
+function renderInstances(): void {
+  const list = document.getElementById("instances-list");
+  if (!list) return;
+
+  const instances = getInstances();
+  list.innerHTML = "";
+
+  if (instances.length === 0) {
+    const empty = document.createElement("p");
+    empty.style.cssText =
+      "text-align:center;color:var(--muted);font-size:13px;margin:16px 0;";
+    empty.textContent = t().no_instances;
+    list.appendChild(empty);
+    return;
+  }
+
+  for (const instance of instances) {
+    const item = document.createElement("div");
+    item.className = "instance-item";
+    item.setAttribute("role", "listitem");
+
+    const info = document.createElement("div");
+    info.className = "instance-info";
+
+    const name = document.createElement("span");
+    name.className = "instance-name";
+    name.textContent = instance.name || instance.url;
+
+    const url = document.createElement("span");
+    url.className = "instance-url";
+    url.textContent = instance.name ? instance.url : "";
+
+    info.appendChild(name);
+    info.appendChild(url);
+    info.addEventListener("click", () => connectToInstance(instance));
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "instance-edit";
+    editBtn.type = "button";
+    editBtn.setAttribute("aria-label", "Edit instance");
+    editBtn.textContent = "✏";
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startEditInstance(instance);
+    });
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "instance-delete";
+    delBtn.type = "button";
+    delBtn.setAttribute("aria-label", "Delete instance");
+    delBtn.textContent = "✕";
+    delBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const updated = getInstances().filter((i) => i.id !== instance.id);
+      saveInstances(updated);
+      renderInstances();
+    });
+
+    item.appendChild(info);
+    item.appendChild(editBtn);
+    item.appendChild(delBtn);
+    list.appendChild(item);
+  }
+}
+
+function startEditInstance(instance: HaInstance): void {
+  editingInstanceId = instance.id;
+  const urlInput = document.getElementById("ha-url") as HTMLInputElement | null;
+  const nameInput = document.getElementById("ha-name") as HTMLInputElement | null;
+  const connectBtn = document.getElementById("connect-btn") as HTMLButtonElement | null;
+  const errorMsg = document.getElementById("error-msg");
+
+  if (nameInput) nameInput.value = instance.name;
+  if (urlInput) urlInput.value = instance.url;
+  if (errorMsg) errorMsg.setAttribute("hidden", "");
+  if (connectBtn) connectBtn.textContent = t().save;
+
+  showAddForm(true);
+}
+
+async function connectToInstance(instance: HaInstance): Promise<void> {
+  localStorage.setItem("ha_url", instance.url);
+  await applyZoom(getZoom());
+  window.location.replace(instance.url);
+}
+
+// ---------------------------------------------------------------------------
+// Zoom controls
+// ---------------------------------------------------------------------------
+
+function getZoom(): number {
+  return parseFloat(localStorage.getItem("zoom_level") ?? "1");
+}
+
+async function setZoom(factor: number): Promise<void> {
+  const clamped = Math.round(Math.min(3.0, Math.max(0.5, factor)) * 10) / 10;
+  localStorage.setItem("zoom_level", String(clamped));
+  const label = document.getElementById("zoom-level");
+  if (label) label.textContent = `${Math.round(clamped * 100)}%`;
+  await applyZoom(clamped);
 }
 
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 1. Reset & redirect logic
-  const urlParams = new URLSearchParams(window.location.search);
-  const isReset = urlParams.get("reset") === "1";
+document.addEventListener("DOMContentLoaded", async () => {
+  migrateLegacyUrl();
 
-  if (isReset) {
+  const params = new URLSearchParams(window.location.search);
+
+  // ?switch=1  →  clear active URL but keep saved instances (from tray "Switch Instance")
+  // ?reset=1   →  full wipe of all data (legacy / deep reset)
+  if (params.get("switch") === "1") {
     localStorage.removeItem("ha_url");
-    // Clean the query string from the address bar without a reload
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (params.get("reset") === "1") {
+    localStorage.removeItem("ha_url");
+    localStorage.removeItem("ha_instances");
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
+  // Apply stored zoom before potentially redirecting
+  const savedZoom = getZoom();
+  await applyZoom(savedZoom);
+  const zoomLabel = document.getElementById("zoom-level");
+  if (zoomLabel) zoomLabel.textContent = `${Math.round(savedZoom * 100)}%`;
+
+  // Fast-path: saved URL → navigate immediately
   const savedUrl = localStorage.getItem("ha_url");
-  if (savedUrl && !isReset) {
+  if (savedUrl) {
     window.location.replace(savedUrl);
-    return; // Stop further execution – the page is navigating away
+    return;
   }
 
-  // 2. Element references
-  const urlInput = document.getElementById("ha-url") as HTMLInputElement | null;
-  const connectBtn = document.getElementById(
-    "connect-btn",
-  ) as HTMLButtonElement | null;
-  const welcomeText = document.getElementById("welcome-text");
-  const subText = document.getElementById("sub-text");
-  const urlLabel = document.getElementById("url-label");
-  const storageInfo = document.getElementById("storage-info");
-  const helpLink = document.getElementById(
-    "help-link",
-  ) as HTMLAnchorElement | null;
-  const errorMsg = document.getElementById("error-msg");
+  // Decide which view to show
+  const instances = getInstances();
+  if (instances.length > 0) {
+    showInstanceList();
+  } else {
+    showAddForm(false);
+  }
+
+  // --- Language setup ---
+  const savedLang = currentLang();
+  updateLanguage(savedLang);
+
+  // Mark initially selected option
+  document.querySelectorAll<HTMLElement>(".custom-option").forEach((opt) => {
+    if (opt.getAttribute("data-value") === savedLang) {
+      opt.classList.add("selected");
+    }
+  });
+
+  // --- Element refs ---
+  const urlInput   = document.getElementById("ha-url")      as HTMLInputElement | null;
+  const nameInput  = document.getElementById("ha-name")     as HTMLInputElement | null;
+  const connectBtn = document.getElementById("connect-btn") as HTMLButtonElement | null;
+  const errorMsg   = document.getElementById("error-msg");
+  const helpLink   = document.getElementById("help-link")   as HTMLAnchorElement | null;
   const langWrapper = document.getElementById("lang-select-container");
-  const langTrigger = langWrapper?.querySelector<HTMLElement>(
-    ".custom-select__trigger",
-  );
-  const langText = document.getElementById("current-lang");
-  const options = document.querySelectorAll<HTMLElement>(".custom-option");
+  const langTrigger = langWrapper?.querySelector<HTMLElement>(".custom-select__trigger");
+  const options    = document.querySelectorAll<HTMLElement>(".custom-option");
+  const backBtn    = document.getElementById("back-btn")    as HTMLButtonElement | null;
+  const addBtn     = document.getElementById("add-instance-btn");
+  const zoomOut    = document.getElementById("zoom-out")    as HTMLButtonElement | null;
+  const zoomIn     = document.getElementById("zoom-in")     as HTMLButtonElement | null;
 
-  // 3. Language update
-  function updateLanguage(lang: string): void {
-    const t = translations[lang];
-    if (!t) return;
-
-    if (welcomeText) welcomeText.textContent = t.welcome;
-    if (subText) subText.textContent = t.p_text;
-    if (urlLabel) urlLabel.textContent = t.label;
-    if (connectBtn) connectBtn.textContent = t.connect;
-    if (storageInfo) storageInfo.textContent = t.footer;
-    if (urlInput) urlInput.placeholder = t.placeholder;
-
-    if (langText) {
-      langText.textContent = LANG_NAMES[lang] ?? lang.toUpperCase();
-    }
-
-    // Re-set help link text while preserving the SVG icon inside it
-    if (helpLink) {
-      const svg = helpLink.querySelector("svg");
-      helpLink.textContent = t.help + " ";
-      if (svg) helpLink.appendChild(svg);
-    }
-
-    localStorage.setItem("app_lang", lang);
-  }
-
-  // 4. Connect action – shared between button click and Enter key
-  function handleConnect(): void {
+  // --- Connect / Save logic ---
+  async function handleConnect(): Promise<void> {
     if (!urlInput) return;
-    const t =
-      translations[localStorage.getItem("app_lang") ?? "en"] ??
-      translations["en"];
-
     const url = normalizeUrl(urlInput.value);
     if (!url) {
       if (errorMsg) {
-        errorMsg.textContent = t.invalid_url;
+        errorMsg.textContent = t().invalid_url;
         errorMsg.removeAttribute("hidden");
       }
       urlInput.focus();
       return;
     }
-
     if (errorMsg) errorMsg.setAttribute("hidden", "");
+
+    const name = nameInput?.value.trim() ?? "";
+
+    if (editingInstanceId) {
+      // Update existing instance in place
+      const updated = getInstances().map((i) =>
+        i.id === editingInstanceId ? { ...i, name, url } : i,
+      );
+      saveInstances(updated);
+      editingInstanceId = null;
+      if (connectBtn) connectBtn.textContent = t().connect;
+    } else {
+      // Add new instance (skip if exact URL already saved)
+      const existing = getInstances();
+      if (!existing.find((i) => i.url === url)) {
+        saveInstances([...existing, { id: Date.now().toString(), name, url }]);
+      }
+    }
+
     localStorage.setItem("ha_url", url);
+    await applyZoom(getZoom());
     window.location.replace(url);
   }
 
-  // 5. Help link – attach once, do not rebuild on language change
-  helpLink?.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const href = helpLink.getAttribute("href");
-    if (href) await openExternalUrl(href);
-  });
-
-  // 6. Connect button & Enter key
+  // --- Event listeners ---
   connectBtn?.addEventListener("click", handleConnect);
   urlInput?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") handleConnect();
   });
-
-  // Clear error on input
   urlInput?.addEventListener("input", () => {
     if (errorMsg) errorMsg.setAttribute("hidden", "");
   });
 
-  // 7. Language dropdown
-  updateLanguage(localStorage.getItem("app_lang") ?? "en");
+  helpLink?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const href = helpLink.getAttribute("href");
+    if (href) {
+      try {
+        await openUrl(href);
+      } catch {
+        window.open(href, "_blank", "noopener,noreferrer");
+      }
+    }
+  });
+
+  backBtn?.addEventListener("click", () => {
+    // Cancel any pending edit
+    editingInstanceId = null;
+    if (connectBtn) connectBtn.textContent = t().connect;
+    showInstanceList();
+  });
+
+  addBtn?.addEventListener("click", () => {
+    editingInstanceId = null;
+    if (nameInput) nameInput.value = "";
+    if (urlInput) urlInput.value = "";
+    if (errorMsg) errorMsg.setAttribute("hidden", "");
+    if (connectBtn) connectBtn.textContent = t().connect;
+    showAddForm(true);
+  });
+
+  // --- Zoom ---
+  zoomOut?.addEventListener("click", () => setZoom(getZoom() - 0.1));
+  zoomIn?.addEventListener("click", () => setZoom(getZoom() + 0.1));
+
+  // --- Language dropdown with full keyboard support ---
+  function openDropdown(): void {
+    langWrapper?.classList.add("open");
+    langTrigger?.setAttribute("aria-expanded", "true");
+  }
+  function closeDropdown(): void {
+    langWrapper?.classList.remove("open");
+    langTrigger?.setAttribute("aria-expanded", "false");
+  }
+  function selectOption(opt: HTMLElement): void {
+    const val = opt.getAttribute("data-value");
+    if (!val) return;
+    updateLanguage(val);
+    closeDropdown();
+    options.forEach((o) => o.classList.remove("selected"));
+    opt.classList.add("selected");
+    langTrigger?.focus();
+  }
 
   langTrigger?.addEventListener("click", (e) => {
     e.stopPropagation();
-    langWrapper?.classList.toggle("open");
+    langWrapper?.classList.contains("open") ? closeDropdown() : openDropdown();
+  });
+  langTrigger?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      langWrapper?.classList.contains("open") ? closeDropdown() : openDropdown();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      openDropdown();
+      (options[0] as HTMLElement | undefined)?.focus();
+    } else if (e.key === "Escape") {
+      closeDropdown();
+    }
   });
 
-  options.forEach((option) => {
-    option.addEventListener("click", () => {
-      const val = option.getAttribute("data-value");
-      if (val) {
-        updateLanguage(val);
-        langWrapper?.classList.remove("open");
-        options.forEach((opt) => opt.classList.remove("selected"));
-        option.classList.add("selected");
+  options.forEach((option, idx) => {
+    option.addEventListener("click", () => selectOption(option));
+    option.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectOption(option);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        (options[idx + 1] as HTMLElement | undefined)?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (idx === 0) langTrigger?.focus();
+        else (options[idx - 1] as HTMLElement | undefined)?.focus();
+      } else if (e.key === "Escape") {
+        closeDropdown();
+        langTrigger?.focus();
       }
     });
   });
 
-  // Close dropdown when clicking outside
-  window.addEventListener("click", () => langWrapper?.classList.remove("open"));
+  window.addEventListener("click", () => closeDropdown());
+
+  // Non-blocking update check
+  checkForUpdates();
 });
